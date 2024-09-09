@@ -1,10 +1,8 @@
 from flask import Flask, request, redirect, render_template
 from fhirclient import client
 import requests
-import logging
 
 app = Flask(__name__)
-# logging.basicConfig(level=logging.DEBUG)
 
 # Epic FHIR R4 sandbox settings
 EPIC_FHIR_R4_URL = "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4"
@@ -37,7 +35,6 @@ def callback():
         if not code:
             raise ValueError("Authorization code not found")
 
-        # Exchange authorization code for access token
         token_response = requests.post(
             "https://fhir.epic.com/interconnect-fhir-oauth/oauth2/token",
             data={
@@ -51,7 +48,6 @@ def callback():
         token_response.raise_for_status()
         token_json = token_response.json()
 
-        # Fetch patient data
         headers = {
             'Authorization': f"Bearer {token_json['access_token']}",
             "Accept": "application/json"
@@ -66,7 +62,6 @@ def callback():
         patient_resource = patient_data['entry'][0]['resource']
         patient_id = patient_resource['id']
 
-        # Fetch related patient data concurrently
         endpoints = {
             'allergies': f"{EPIC_FHIR_R4_URL}/AllergyIntolerance?patient={patient_id}",
             'medications': f"{EPIC_FHIR_R4_URL}/MedicationRequest?patient={patient_id}",
