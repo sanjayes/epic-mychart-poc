@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Demographics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Patient Demographics</h1>
+        <a href="{{ url_for('index') }}" class="login-button">Logout</a>
+    </div>
+
+    <div class="patient-info">
+        <p><strong>Patient ID:</strong> {{ patient['id'] }}</p>
+        <p><strong>Name:</strong> {{ patient['name'][0]['given'][0] }} {{ patient['name'][0]['family'] }}</p>
+        <p><strong>Sex:</strong> {{ patient['gender'] }}</p>
+        <p><strong>Birthdate:</strong> {{ patient['birthDate'] }}</p>
+        <p><strong>Marital Status:</strong> {{ patient['maritalStatus']['text'] }}</p>
+        <p><strong>Contact:</strong>
+            {% if patient['telecom'] %}
+            {% for contact in patient['telecom'] %}
+            {{ contact['value'] }} ({{ contact['system'].capitalize() }})<br>
+            {% endfor %}
+            {% else %}
+            No contact information available.
+            {% endif %}
+        </p>
+        <p><strong>Address:</strong>
+            {% if patient['address'] %}
+            {{ patient['address'][0]['line'][0] if patient['address'][0]['line'] else '' }},
+            {{ patient['address'][0]['city'] }},
+            {{ patient['address'][0]['state'] }},
+            {{ patient['address'][0]['postalCode'] }}
+            {% else %}
+            No address available.
+            {% endif %}
+        </p>
+        <p><strong>General Practitioner:</strong>
+            {% if patient['generalPractitioner'] %}
+            {{ patient['generalPractitioner'][0]['display'] }}
+            {% else %}
+            No general practitioner available.
+            {% endif %}
+        </p>
+        <p><strong>Managing Organization:</strong>
+            {{ patient['managingOrganization']['display'] if patient['managingOrganization'] else 'No managing
+            organization available' }}
+        </p>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <h3>Allergies</h3>
+            {% if allergies %}
+            <ul>
+                {% for entry in allergies %}
+                <li>
+                    <strong>Allergy:</strong> {{ entry.resource.code.text if entry.resource.code else 'Unknown' }}<br>
+                    <strong>Clinical Status:</strong> {{ entry.resource.clinicalStatus.coding[0].display if
+                    entry.resource.clinicalStatus else 'Unknown' }}<br>
+                    <strong>Verification Status:</strong> {{ entry.resource.verificationStatus.coding[0].display if
+                    entry.resource.verificationStatus else 'Unknown' }}<br>
+                    <strong>Reaction:</strong>
+                    {% if entry.resource.reaction %}
+                    {% for reaction in entry.resource.reaction %}
+                    {{ reaction.manifestation[0].text }} (Severity: {{ reaction.severity }})<br>
+                    {% endfor %}
+                    {% else %}
+                    No reactions found.
+                    {% endif %}
+                </li>
+                <hr>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No allergies found.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h3>Medications</h3>
+            {% if medications %}
+            <ul>
+                {% for entry in medications %}
+                <li>
+                    <strong>Medication:</strong> {{ entry.resource.medicationReference.display if
+                    entry.resource.medicationReference else 'Unknown' }}<br>
+                    <strong>Status:</strong> {{ entry.resource.status }}<br>
+                    <strong>Code:</strong> {{ entry.resource.code.text if entry.resource.code else 'Unknown' }}<br>
+                    <strong>Manufacturer:</strong> {{ entry.resource.manufacturer.display if entry.resource.manufacturer
+                    else 'Unknown' }}<br>
+                    <strong>Dosage:</strong> {{ entry.resource.dosageInstruction[0].text if
+                    entry.resource.dosageInstruction else 'No instructions' }}
+                </li>
+                <hr>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No medications found.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h3>Conditions</h3>
+            {% if conditions %}
+            <ul>
+                {% for entry in conditions %}
+                <li>
+                    <strong>Condition:</strong> {{ entry.resource.code.text if entry.resource.code else 'Unknown' }}<br>
+                    <strong>Clinical Status:</strong> {{ entry.resource.clinicalStatus.coding[0].display if
+                    entry.resource.clinicalStatus else 'Unknown' }}
+                </li>
+                <hr>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No conditions found.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h3>Appointments</h3>
+            {% if appointments %}
+            <ul>
+                {% for entry in appointments %}
+                {% if entry.resource.resourceType == "Appointment" %}
+                <li>
+                    <strong>Status:</strong> {{ entry.resource.status }}<br>
+                    <strong>Appointment Type:</strong> {{ entry.resource.appointmentType.coding[0].display if
+                    entry.resource.appointmentType else 'Unknown' }}<br>
+                    <strong>Start Time:</strong> {{ entry.resource.start }}<br>
+                    <strong>End Time:</strong> {{ entry.resource.end }}<br>
+                    <strong>Duration:</strong> {{ entry.resource.minutesDuration }} minutes<br>
+                    <strong>Patient Instructions:</strong> {{ entry.resource.patientInstruction if
+                    entry.resource.patientInstruction else 'No instructions' }}<br>
+                    <strong>Location:</strong> {{ entry.resource.participant[1].actor.display if
+                    entry.resource.participant[1].actor else 'Unknown' }}<br>
+                    <strong>Participant (Patient):</strong> {{ entry.resource.participant[0].actor.display }}
+                </li>
+                {% else %}
+                <li><strong>Error:</strong> Unable to load appointment details. Reason: {{
+                    entry.resource.issue[0].details.text }}</li>
+                {% endif %}
+                <hr>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No appointments found.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>
