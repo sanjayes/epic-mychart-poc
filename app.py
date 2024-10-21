@@ -48,6 +48,8 @@ def callback():
         token_response.raise_for_status()
         token_json = token_response.json()
 
+        print('AccessToken: ', token_json['access_token'])
+
         headers = {
             'Authorization': f"Bearer {token_json['access_token']}",
             "Accept": "application/json"
@@ -63,9 +65,10 @@ def callback():
         patient_id = patient_resource['id']
 
         endpoints = {
-            'allergies': f"{EPIC_FHIR_R4_URL}/AllergyIntolerance?patient={patient_id}",
-            'medications': f"{EPIC_FHIR_R4_URL}/MedicationRequest?patient={patient_id}",
-            'conditions': f"{EPIC_FHIR_R4_URL}/Condition?patient={patient_id}",
+            'allergies': f"{EPIC_FHIR_R4_URL}/AllergyIntolerance",
+            'medications': f"{EPIC_FHIR_R4_URL}/MedicationRequest",
+            'conditions': f"{EPIC_FHIR_R4_URL}/Condition",
+            'appointments': f"{EPIC_FHIR_R4_URL}/Appointment",
         }
 
         responses = {}
@@ -74,12 +77,15 @@ def callback():
             response.raise_for_status()
             responses[key] = response.json().get('entry', [])
 
+        # print('APPOINTMENT: ',responses['appointments'])
+
         return render_template(
             'patient.html',
             patient=patient_resource,
             allergies=responses['allergies'],
             medications=responses['medications'],
             conditions=responses['conditions'],
+            appointments=responses['appointments']
         )
 
     except Exception as e:

@@ -9,13 +9,9 @@
 </head>
 
 <body>
-    <!-- <div class="loading-overlay" id="loadingOverlay">
-        <div class="loader"></div>
-    </div> -->
-
     <div class="container">
         <h1>Patient Demographics</h1>
-        <a href="{{ url_for('index') }}" class="login-button">Login</a>
+        <a href="{{ url_for('index') }}" class="login-button">Logout</a>
     </div>
 
     <div class="patient-info">
@@ -77,6 +73,7 @@
                     No reactions found.
                     {% endif %}
                 </li>
+                <hr>
                 {% endfor %}
             </ul>
             {% else %}
@@ -99,6 +96,7 @@
                     <strong>Dosage:</strong> {{ entry.resource.dosageInstruction[0].text if
                     entry.resource.dosageInstruction else 'No instructions' }}
                 </li>
+                <hr>
                 {% endfor %}
             </ul>
             {% else %}
@@ -116,21 +114,45 @@
                     <strong>Clinical Status:</strong> {{ entry.resource.clinicalStatus.coding[0].display if
                     entry.resource.clinicalStatus else 'Unknown' }}
                 </li>
+                <hr>
                 {% endfor %}
             </ul>
             {% else %}
             <p>No conditions found.</p>
             {% endif %}
         </div>
+
+        <div class="card">
+            <h3>Appointments</h3>
+            {% if appointments %}
+            <ul>
+                {% for entry in appointments %}
+                {% if entry.resource.resourceType == "Appointment" %}
+                <li>
+                    <strong>Status:</strong> {{ entry.resource.status }}<br>
+                    <strong>Appointment Type:</strong> {{ entry.resource.appointmentType.coding[0].display if
+                    entry.resource.appointmentType else 'Unknown' }}<br>
+                    <strong>Start Time:</strong> {{ entry.resource.start }}<br>
+                    <strong>End Time:</strong> {{ entry.resource.end }}<br>
+                    <strong>Duration:</strong> {{ entry.resource.minutesDuration }} minutes<br>
+                    <strong>Patient Instructions:</strong> {{ entry.resource.patientInstruction if
+                    entry.resource.patientInstruction else 'No instructions' }}<br>
+                    <strong>Location:</strong> {{ entry.resource.participant[1].actor.display if
+                    entry.resource.participant[1].actor else 'Unknown' }}<br>
+                    <strong>Participant (Patient):</strong> {{ entry.resource.participant[0].actor.display }}
+                </li>
+                {% else %}
+                <li><strong>Error:</strong> Unable to load appointment details. Reason: {{
+                    entry.resource.issue[0].details.text }}</li>
+                {% endif %}
+                <hr>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No appointments found.</p>
+            {% endif %}
+        </div>
     </div>
-    <script>
-        // Simulate loading delay
-        document.addEventListener("DOMContentLoaded", function () {
-            setTimeout(function () {
-                document.getElementById("loadingOverlay").classList.add("hidden");
-            }, 5000); // Adjust delay to match loading time
-        });
-    </script>
 </body>
 
 </html>
